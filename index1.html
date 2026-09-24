@@ -2,671 +2,698 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>🎯 TTS Informatika - 50 Langkah</title>
+<title>🎯 TTS Informatika - FINAL</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', sans-serif; }
   body {
-    background: linear-gradient(135deg, #1e3c72, #2a5298);
-    min-height:100vh; color:#fff; padding:15px;
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    min-height:100vh; color:#fff; padding:10px;
   }
   .container { max-width:1400px; margin:auto; }
   .header {
     text-align:center; padding:15px;
-    background:rgba(0,0,0,0.5); border-radius:12px;
+    background:rgba(0,0,0,0.4); border-radius:12px;
     border:2px solid #f39c12; margin-bottom:15px;
   }
-  .header h1 { color:#f39c12; font-size:1.8em; }
-  .header p { color:#ddd; margin-top:5px; font-size:0.95em; }
-  .stats {
-    display:flex; justify-content:space-around;
-    background:rgba(255,255,255,0.08); padding:10px;
-    border-radius:10px; margin-bottom:15px; flex-wrap:wrap; gap:10px;
+  .header h1 { color:#f39c12; font-size:1.6em; }
+  .stats-bar {
+    display:flex; justify-content:space-around; flex-wrap:wrap; gap:10px;
+    background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; margin-bottom:15px;
   }
-  .stat { text-align:center; min-width:80px; }
-  .stat-val { font-size:1.4em; color:#f39c12; font-weight:bold; }
-  .stat-lbl { font-size:0.8em; color:#bbb; }
-  .game-layout {
-    display:grid; grid-template-columns:1fr 1fr; gap:15px;
+  .stat-item { text-align:center; }
+  .stat-val { font-size:1.3em; font-weight:bold; color:#f39c12; }
+  .stat-lbl { font-size:0.8em; color:#aaa; }
+  
+  .main-layout {
+    display:grid; grid-template-columns: 1fr 400px; gap:20px;
   }
-  @media(max-width:900px){ .game-layout{grid-template-columns:1fr;} }
-  .grid-container {
-    background:rgba(0,0,0,0.4); padding:15px;
-    border-radius:12px; overflow-x:auto;
+  @media(max-width:1000px) { .main-layout { grid-template-columns: 1fr; } }
+
+  .grid-wrapper {
+    background:rgba(0,0,0,0.3); padding:15px; border-radius:12px;
+    overflow-x:auto;
   }
   .tts-grid {
-    display:grid;
-    grid-template-columns:repeat(15, 1fr);
-    gap:2px; margin:auto; max-width:600px;
+    display:grid; gap:2px; margin:auto;
   }
   .cell {
-    aspect-ratio:1; background:#fff;
+    width:32px; height:32px;
+    background:#444; border:1px solid #333;
+    position:relative; cursor:pointer;
     display:flex; align-items:center; justify-content:center;
-    font-size:1.2em; font-weight:bold; color:#333;
-    border-radius:3px; cursor:pointer;
-    position:relative; transition:0.2s;
   }
-  .cell.black { background:#2c3e50; cursor:default; }
-  .cell.active { background:#fff; }
-  .cell.selected { background:#f39c12; color:#fff; }
-  .cell.correct { background:#27ae60; color:#fff; }
-  .cell.wrong { background:#e74c3c; color:#fff; }
-  .cell.highlight { background:#3498db; color:#fff; }
-  .cell-number {
-    position:absolute; top:1px; left:2px;
-    font-size:0.5em; color:#666; font-weight:normal;
-  }
+  .cell.white { background:#fff; border-color:#ccc; }
+  .cell.selected { background:#ffeaa7 !important; outline:2px solid #d35400; z-index:2; }
+  .cell.highlighted { background:#74b9ff !important; }
+  .cell.correct-word { background:#a8e6cf !important; }
   .cell input {
-    width:100%; height:100%; border:none;
-    text-align:center; font-size:1em; font-weight:bold;
-    background:transparent; color:#333; outline:none;
-    text-transform:uppercase;
+    width:100%; height:100%; border:none; background:transparent;
+    text-align:center; font-size:1.1em; font-weight:bold; text-transform:uppercase;
+    outline:none; color:#2d3436;
   }
+  .cell-num {
+    position:absolute; top:0px; left:2px; font-size:0.55em; color:#636e72; font-weight:normal;
+    pointer-events:none;
+  }
+  
   .question-panel {
-    background:rgba(0,0,0,0.4); padding:15px;
-    border-radius:12px; max-height:700px; overflow-y:auto;
+    background:rgba(0,0,0,0.3); padding:15px; border-radius:12px;
+    height:650px; overflow-y:auto; display:flex; flex-direction:column;
   }
-  .tabs {
-    display:flex; gap:5px; margin-bottom:15px;
+  .panel-title {
+    color:#f39c12; font-weight:bold; margin-bottom:10px; font-size:1.1em;
+    text-align:center; padding-bottom:8px; border-bottom:2px solid #f39c12;
   }
-  .tab {
-    flex:1; padding:10px; text-align:center;
-    background:rgba(255,255,255,0.1); border-radius:8px;
-    cursor:pointer; transition:0.2s; font-weight:bold;
+  .tabs { display:flex; gap:5px; margin-bottom:10px; }
+  .tab-btn {
+    flex:1; padding:8px; background:#2d3436; border:none; color:#fff;
+    cursor:pointer; border-radius:5px; font-weight:bold;
   }
-  .tab.active { background:#f39c12; color:#000; }
-  .tab:hover { background:rgba(243,156,18,0.3); }
-  .question-list {
-    display:grid; gap:8px;
+  .tab-btn.active { background:#f39c12; color:#000; }
+  .q-list { flex:1; overflow-y:auto; }
+  .q-item {
+    padding:8px; margin-bottom:5px; background:rgba(255,255,255,0.05);
+    border-left:3px solid transparent; cursor:pointer; border-radius:3px;
+    font-size:0.88em; line-height:1.3;
   }
-  .question-item {
-    background:rgba(255,255,255,0.08); padding:10px;
-    border-radius:8px; cursor:pointer; transition:0.2s;
-    border-left:4px solid transparent;
-  }
-  .question-item:hover { background:rgba(255,255,255,0.15); }
-  .question-item.answered { border-left-color:#27ae60; background:rgba(39,174,96,0.1); }
-  .question-item.current { border-left-color:#f39c12; background:rgba(243,156,18,0.2); }
-  .q-number {
-    display:inline-block; background:#f39c12; color:#000;
-    padding:2px 8px; border-radius:4px; font-weight:bold;
-    font-size:0.85em; margin-right:8px;
-  }
-  .q-direction {
-    display:inline-block; background:#3498db; color:#fff;
-    padding:2px 6px; border-radius:4px; font-size:0.75em;
-    margin-left:5px;
-  }
-  .q-clue { margin-top:5px; font-size:0.9em; line-height:1.4; }
-  .q-category {
-    display:inline-block; padding:2px 6px; border-radius:4px;
-    font-size:0.7em; margin-left:5px; font-weight:bold;
-  }
-  .cat-se { background:#4285f4; }
+  .q-item:hover { background:rgba(255,255,255,0.1); }
+  .q-item.current { background:rgba(243,156,18,0.2); border-left-color:#f39c12; }
+  .q-item.solved { opacity:0.7; border-left-color:#27ae60; text-decoration:line-through; }
+  .q-header { display:flex; justify-content:space-between; margin-bottom:3px; }
+  .q-num { font-weight:bold; color:#f39c12; }
+  .q-len { font-size:0.75em; color:#aaa; }
+  .q-cat { font-size:0.7em; padding:1px 5px; border-radius:3px; color:#fff; }
+  .cat-se { background:#3498db; }
   .cat-fact { background:#e74c3c; }
-  .cat-lateral { background:#9b59b6; }
+  .cat-lat { background:#9b59b6; }
   .cat-doc { background:#27ae60; }
+
+  .controls { margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; }
   .btn {
-    background:#f39c12; color:#000; border:none;
-    padding:10px 20px; border-radius:8px; cursor:pointer;
-    font-size:0.95em; font-weight:bold; margin-top:10px;
-    transition:0.2s;
+    padding:8px 12px; border:none; border-radius:5px; cursor:pointer;
+    font-weight:bold; background:#f39c12; color:#000; font-size:0.85em;
   }
-  .btn:hover { background:#e67e22; }
   .btn-secondary { background:#555; color:#fff; }
-  .btn-group { display:flex; gap:10px; flex-wrap:wrap; margin-top:15px; }
-  .feedback {
-    background:rgba(243,156,18,0.2); padding:12px;
-    border-radius:8px; margin-top:10px;
-    border-left:4px solid #f39c12;
-    animation:fadeIn 0.3s;
+  .btn-check { background:#27ae60; color:#fff; }
+  .btn-hint { background:#3498db; color:#fff; }
+  
+  .feedback-msg {
+    margin-top:10px; padding:10px; border-radius:5px; display:none;
+    background:rgba(39,174,96,0.2); border:1px solid #27ae60;
+    font-size:0.9em;
   }
-  @keyframes fadeIn { from{opacity:0;transform:translateY(-10px);} to{opacity:1;transform:translateY(0);} }
-  .win-screen {
-    text-align:center; padding:25px;
-    background:linear-gradient(135deg,rgba(39,174,96,0.3),rgba(243,156,18,0.3));
-    border-radius:15px; margin-top:15px;
+  
+  .info-box {
+    background:rgba(243,156,18,0.1); padding:10px; border-radius:5px;
+    margin-bottom:10px; font-size:0.85em; border-left:3px solid #f39c12;
   }
-  .win-screen h2 { color:#27ae60; font-size:1.8em; margin-bottom:10px; }
-  .progress-bar {
-    background:rgba(255,255,255,0.1); height:8px;
-    border-radius:4px; overflow:hidden; margin:10px 0;
-  }
-  .progress-fill {
-    height:100%; background:linear-gradient(90deg,#f39c12,#e67e22);
-    transition:width 0.4s;
-  }
-  .legend {
-    display:flex; gap:10px; flex-wrap:wrap;
-    margin:10px 0; font-size:0.85em;
-  }
-  .legend-item {
-    display:flex; align-items:center; gap:5px;
-  }
-  .legend-color {
-    width:20px; height:20px; border-radius:3px;
+  
+  .debug-info {
+    background:rgba(231,76,60,0.2); padding:8px; border-radius:5px;
+    margin-bottom:10px; font-size:0.8em; color:#ffcccc;
+    border-left:3px solid #e74c3c;
   }
 </style>
 </head>
 <body>
+
 <div class="container">
   <div class="header">
-    <h1>🎯 TTS Informatika - 50 Langkah</h1>
-    <p>Teka-Teki Silang: Search Engine • Pemeriksa Fakta • Membaca Lateral • Pengolahan Dokumen</p>
+    <h1>🧩 Teka-Teki Silang: Informatika Otomotif</h1>
+    <p style="font-size:0.9em; color:#ccc;">Search Engine • Fact Check • Lateral Reading • Document</p>
   </div>
 
-  <div class="stats">
-    <div class="stat"><div class="stat-val" id="score">0</div><div class="stat-lbl">Skor</div></div>
-    <div class="stat"><div class="stat-val" id="progress">0/50</div><div class="stat-lbl">Terjawab</div></div>
-    <div class="stat"><div class="stat-val" id="streak">0</div><div class="stat-lbl">Streak 🔥</div></div>
-    <div class="stat"><div class="stat-val" id="timer">00:00</div><div class="stat-lbl">Waktu</div></div>
+  <div class="stats-bar">
+    <div class="stat-item"><div class="stat-val" id="score">0</div><div class="stat-lbl">Skor</div></div>
+    <div class="stat-item"><div class="stat-val" id="progress">0/0</div><div class="stat-lbl">Terpecahkan</div></div>
+    <div class="stat-item"><div class="stat-val" id="placed">0</div><div class="stat-lbl">Kata Terpasang</div></div>
+    <div class="stat-item"><div class="stat-val" id="timer">00:00</div><div class="stat-lbl">Waktu</div></div>
   </div>
 
-  <div class="progress-bar"><div class="progress-fill" id="progressBar" style="width:0%"></div></div>
-
-  <div class="game-layout">
-    <div class="grid-container">
-      <h3 style="color:#f39c12;margin-bottom:10px;">📋 Grid TTS</h3>
-      <div class="legend">
-        <div class="legend-item"><div class="legend-color" style="background:#fff;"></div>Kosong</div>
-        <div class="legend-item"><div class="legend-color" style="background:#2c3e50;"></div>Hitam</div>
-        <div class="legend-item"><div class="legend-color" style="background:#f39c12;"></div>Dipilih</div>
-        <div class="legend-item"><div class="legend-color" style="background:#27ae60;"></div>Benar</div>
+  <div class="main-layout">
+    <div class="grid-wrapper">
+      <div class="info-box">
+        💡 <b>Cara main:</b> Klik kotak atau pertanyaan → ketik huruf → otomatis pindah ke kotak berikutnya.
       </div>
-      <div class="tts-grid" id="ttsGrid"></div>
-      <div class="btn-group">
-        <button class="btn btn-secondary" onclick="checkAllAnswers()">✓ Cek Semua</button>
-        <button class="btn btn-secondary" onclick="revealAnswer()">💡 Reveal</button>
-        <button class="btn btn-secondary" onclick="resetGame()">🔄 Reset</button>
-      </div>
+      <div id="debugInfo" class="debug-info" style="display:none;"></div>
+      <div id="gridContainer" class="tts-grid"></div>
     </div>
 
     <div class="question-panel">
+      <div class="panel-title">📝 DAFTAR PERTANYAAN</div>
       <div class="tabs">
-        <div class="tab active" onclick="switchTab('across')">→ Mendatar</div>
-        <div class="tab" onclick="switchTab('down')">↓ Menurun</div>
+        <button class="tab-btn active" id="tabAcross" onclick="filterQuestions('across')">→ Mendatar (<span id="countAcross">0</span>)</button>
+        <button class="tab-btn" id="tabDown" onclick="filterQuestions('down')">↓ Menurun (<span id="countDown">0</span>)</button>
       </div>
-      <div class="question-list" id="questionList"></div>
+      
+      <div class="q-list" id="questionList">
+        <p style="color:#aaa; text-align:center; padding:20px;">Memuat pertanyaan...</p>
+      </div>
+
+      <div class="controls">
+        <button class="btn btn-check" onclick="checkAnswers()">✓ Cek Jawaban</button>
+        <button class="btn btn-hint" onclick="revealCurrent()">💡 Reveal</button>
+        <button class="btn btn-secondary" onclick="clearBoard()">🗑️ Reset</button>
+      </div>
+      <div id="feedback" class="feedback-msg"></div>
     </div>
   </div>
 </div>
 
 <script>
-// ============ GRID LAYOUT ============
-// Grid 15x15 dengan kata-kata yang sudah di-layout
-const GRID_SIZE = 15;
-const grid = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(null));
+// ============ DATA 50 KATA ============
+const wordsData = [
+  // SEARCH ENGINE (13)
+  { w: "GOOGLE", c: "Mesin pencari nomor 1 dunia", cat: "se" },
+  { w: "KUNCI", c: "Kata ___ yang spesifik lebih efektif", cat: "se" },
+  { w: "SITE", c: "Operator '___:go.id' untuk situs pemerintah", cat: "se" },
+  { w: "PDF", c: "Format file dokumen final", cat: "se" },
+  { w: "QUERY", c: "Istilah teknis untuk kata pencarian", cat: "se" },
+  { w: "HASIL", c: "___ pencarian muncul di halaman pertama", cat: "se" },
+  { w: "BROWSER", c: "Aplikasi web seperti Chrome/Firefox", cat: "se" },
+  { w: "FILETYPE", c: "Operator '___:pdf' mencari format tertentu", cat: "se" },
+  { w: "SCHOLAR", c: "Google ___ untuk jurnal akademik", cat: "se" },
+  { w: "OPERATOR", c: "Simbol khusus: -, \" \", site:", cat: "se" },
+  { w: "DOMAIN", c: "Akhiran URL (.com, .id, .org)", cat: "se" },
+  { w: "RELEVAN", c: "Sifat hasil pencarian yang sesuai", cat: "se" },
+  { w: "PENCARIAN", c: "Aktivitas utama di mesin pencari", cat: "se" },
 
-// Layout kata-kata (row, col, direction, word)
-const wordLayout = [
-  // MENDATAR (Across)
-  { num:1, row:0, col:0, dir:'across', word:'GOOGLE', cat:'se' },
-  { num:2, row:0, col:7, dir:'across', word:'KUNCI', cat:'se' },
-  { num:3, row:1, col:2, dir:'across', word:'SITE', cat:'se' },
-  { num:4, row:2, col:0, dir:'across', word:'PDF', cat:'se' },
-  { num:5, row:2, col:5, dir:'across', word:'QUERY', cat:'se' },
-  { num:6, row:3, col:1, dir:'across', word:'HASIL', cat:'se' },
-  { num:7, row:4, col:0, dir:'across', word:'HOAKS', cat:'fact' },
-  { num:8, row:4, col:6, dir:'across', word:'CEK', cat:'fact' },
-  { num:9, row:5, col:2, dir:'across', word:'KOMINFO', cat:'fact' },
-  { num:10, row:6, col:0, dir:'across', word:'VIRAL', cat:'fact' },
-  { num:11, row:6, col:7, dir:'across', word:'SHARE', cat:'fact' },
-  { num:12, row:7, col:1, dir:'across', word:'JURNAL', cat:'fact' },
-  { num:13, row:8, col:0, dir:'across', word:'TAB', cat:'lateral' },
-  { num:14, row:8, col:5, dir:'across', word:'KLAIM', cat:'lateral' },
-  { num:15, row:9, col:2, dir:'across', word:'HEADER', cat:'doc' },
-  { num:16, row:10, col:0, dir:'across', word:'TABEL', cat:'doc' },
-  { num:17, row:10, col:7, dir:'across', word:'BARIS', cat:'doc' },
-  { num:18, row:11, col:1, dir:'across', word:'WORD', cat:'doc' },
-  { num:19, row:11, col:7, dir:'across', word:'SUM', cat:'doc' },
-  { num:20, row:12, col:0, dir:'across', word:'TRACK', cat:'doc' },
-  { num:21, row:12, col:7, dir:'across', word:'BROWSER', cat:'lateral' },
-  { num:22, row:13, col:2, dir:'across', word:'FAKTA', cat:'fact' },
-  { num:23, row:13, col:8, dir:'across', word:'SUMBER', cat:'fact' },
-  { num:24, row:14, col:0, dir:'across', word:'KOLOM', cat:'doc' },
-  { num:25, row:14, col:7, dir:'across', word:'EXCEL', cat:'doc' },
-  
-  // MENURUN (Down)
-  { num:26, row:0, col:1, dir:'down', word:'FILETYPE', cat:'se' },
-  { num:27, row:0, col:3, dir:'down', word:'SCHOLAR', cat:'se' },
-  { num:28, row:0, col:5, dir:'down', word:'OPERATOR', cat:'se' },
-  { num:29, row:0, col:9, dir:'down', word:'DOMAIN', cat:'se' },
-  { num:30, row:0, col:11, dir:'down', word:'RELEVAN', cat:'se' },
-  { num:31, row:1, col:0, dir:'down', word:'MAFINDO', cat:'fact' },
-  { num:32, row:1, col:4, dir:'down', word:'VERIFIKASI', cat:'fact' },
-  { num:33, row:2, col:6, dir:'down', word:'KREDIBEL', cat:'fact' },
-  { num:34, row:3, col:8, dir:'down', word:'AKADEMIK', cat:'fact' },
-  { num:35, row:4, col:10, dir:'down', word:'SENSASIONAL', cat:'fact' },
-  { num:36, row:5, col:0, dir:'down', word:'LATERAL', cat:'lateral' },
-  { num:37, row:5, col:3, dir:'down', word:'INDEPENDEN', cat:'lateral' },
-  { num:38, row:6, col:5, dir:'down', word:'PENULIS', cat:'lateral' },
-  { num:39, row:7, col:7, dir:'down', word:'PENERBIT', cat:'lateral' },
-  { num:40, row:8, col:9, dir:'down', word:'AFILIASI', cat:'lateral' },
-  { num:41, row:9, col:11, dir:'down', word:'BUKTI', cat:'lateral' },
-  { num:42, row:10, col:1, dir:'down', word:'FOOTER', cat:'doc' },
-  { num:43, row:10, col:4, dir:'down', word:'CHANGES', cat:'doc' },
-  { num:44, row:11, col:6, dir:'down', word:'AVERAGE', cat:'doc' },
-  { num:45, row:11, col:8, dir:'down', word:'PENCARIAN', cat:'se' },
-  { num:46, row:12, col:10, dir:'down', word:'NASIONAL', cat:'fact' },
-  { num:47, row:12, col:12, dir:'down', word:'PROVOKATIF', cat:'fact' },
-  { num:48, row:13, col:0, dir:'down', word:'EDITOR', cat:'doc' },
-  { num:49, row:13, col:3, dir:'down', word:'FORMAT', cat:'doc' },
-  { num:50, row:13, col:6, dir:'down', word:'DRAFT', cat:'doc' }
-];
+  // PEMERIKSA FAKTA (13)
+  { w: "HOAKS", c: "Informasi palsu yang disebarkan", cat: "fact" },
+  { w: "CEK", c: "Tindakan awal sebelum share: ___ fakta", cat: "fact" },
+  { w: "KOMINFO", c: "Kementerian pengawas informasi digital", cat: "fact" },
+  { w: "VIRAL", c: "Berita yang menyebar sangat cepat", cat: "fact" },
+  { w: "SHARE", c: "Tombol bagikan di media sosial", cat: "fact" },
+  { w: "JURNAL", c: "Sumber ilmiah terpercaya", cat: "fact" },
+  { w: "FAKTA", c: "Lawan dari hoaks", cat: "fact" },
+  { w: "SUMBER", c: "Asal usul informasi harus jelas", cat: "fact" },
+  { w: "MAFINDO", c: "Masyarakat Anti Fitnah Indonesia", cat: "fact" },
+  { w: "VERIFIKASI", c: "Proses membuktikan kebenaran data", cat: "fact" },
+  { w: "KREDIBEL", c: "Dapat dipercaya", cat: "fact" },
+  { w: "AKADEMIK", c: "Situs .ac.id bersifat ___", cat: "fact" },
+  { w: "SENSASIONAL", c: "Judul berlebihan ciri hoaks", cat: "fact" },
 
-// Place words in grid
-wordLayout.forEach(w => {
-  for (let i = 0; i < w.word.length; i++) {
-    const r = w.dir === 'across' ? w.row : w.row + i;
-    const c = w.dir === 'across' ? w.col + i : w.col;
-    if (r < GRID_SIZE && c < GRID_SIZE) {
-      grid[r][c] = { letter: w.word[i], words: [] };
-    }
-  }
-  // Mark which words pass through each cell
-  for (let i = 0; i < w.word.length; i++) {
-    const r = w.dir === 'across' ? w.row : w.row + i;
-    const c = w.dir === 'across' ? w.col + i : w.col;
-    if (r < GRID_SIZE && c < GRID_SIZE && grid[r][c]) {
-      grid[r][c].words.push(w.num);
-    }
-  }
-});
+  // MEMBACA LATERAL (8)
+  { w: "TAB", c: "Buka ___ baru saat verifikasi", cat: "lat" },
+  { w: "KLAIM", c: "Pernyataan tanpa bukti", cat: "lat" },
+  { w: "LATERAL", c: "Membaca ___ = cek sumber lain", cat: "lat" },
+  { w: "INDEPENDEN", c: "Sumber yang tidak berafiliasi", cat: "lat" },
+  { w: "PENULIS", c: "Cek kredibilitas siapa ___ artikel", cat: "lat" },
+  { w: "PENERBIT", c: "Siapa yang menerbitkan situs?", cat: "lat" },
+  { w: "AFILIASI", c: "Hubungan bisnis penulis dengan merek", cat: "lat" },
+  { w: "BUKTI", c: "Data pendukung klaim", cat: "lat" },
 
-// ============ QUESTIONS ============
-const questions = [
-  // MENDATAR (1-25)
-  { num:1, dir:'across', clue:'Mesin pencari paling populer di dunia', answer:'GOOGLE', cat:'se', explain:'Google menguasai >90% pasar search engine global' },
-  { num:2, dir:'across', clue:'Kata _____ yang spesifik menghasilkan pencarian lebih efektif', answer:'KUNCI', cat:'se', explain:'Kata kunci (keyword) yang spesifik = hasil lebih relevan' },
-  { num:3, dir:'across', clue:'Operator _____:go.id membatasi pencarian di situs pemerintah', answer:'SITE', cat:'se', explain:'site: membatasi hasil hanya dari domain tertentu' },
-  { num:4, dir:'across', clue:'Format file _____ untuk manual book yang tidak ingin diubah', answer:'PDF', cat:'se', explain:'PDF (Portable Document Format) mempertahankan tampilan' },
-  { num:5, dir:'across', clue:'_____ pencarian = kata/frasa yang diketik di search bar', answer:'QUERY', cat:'se', explain:'Query adalah input pencarian yang dikirim ke mesin pencari' },
-  { num:6, dir:'across', clue:'_____ pencarian yang relevan muncul di halaman pertama', answer:'HASIL', cat:'se', explain:'Hasil pencarian diurutkan berdasarkan relevansi' },
-  { num:7, dir:'across', clue:'Berita _____ = informasi palsu yang sengaja disebarkan', answer:'HOAKS', cat:'fact', explain:'Hoaks = disinformasi yang dibuat untuk menipu' },
-  { num:8, dir:'across', clue:'_____ fakta sebelum share ke orang lain', answer:'CEK', cat:'fact', explain:'Prinsip: cek dulu, baru share' },
-  { num:9, dir:'across', clue:'Kementerian _____ menerbitkan laporan hoaks mingguan', answer:'KOMINFO', cat:'fact', explain:'Kominfo = Kementerian Komunikasi dan Informatika' },
-  { num:10, dir:'across', clue:'Konten _____ = cepat tersebar di media sosial', answer:'VIRAL', cat:'fact', explain:'Viral = menyebar luas dengan cepat di internet' },
-  { num:11, dir:'across', clue:'Jangan langsung _____ berita yang belum diverifikasi', answer:'SHARE', cat:'fact', explain:'Share = bagikan. Saring sebelum sharing!' },
-  { num:12, dir:'across', clue:'_____ ilmiah = sumber kredibel dari penelitian', answer:'JURNAL', cat:'fact', explain:'Jurnal ilmiah diterbitkan oleh institusi akademik' },
-  { num:13, dir:'across', clue:'Buka _____ baru di browser untuk verifikasi sumber', answer:'TAB', cat:'lateral', explain:'Lateral reading = buka tab baru untuk cek sumber lain' },
-  { num:14, dir:'across', clue:'_____ tanpa bukti = informasi yang perlu diverifikasi', answer:'KLAIM', cat:'lateral', explain:'Klaim harus didukung bukti dan sumber yang jelas' },
-  { num:15, dir:'across', clue:'_____ & footer untuk kop surat di setiap halaman', answer:'HEADER', cat:'doc', explain:'Header muncul di bagian atas setiap halaman dokumen' },
-  { num:16, dir:'across', clue:'Insert → _____ untuk membuat daftar suku cadang', answer:'TABEL', cat:'doc', explain:'Tabel ideal untuk data terstruktur seperti daftar barang' },
-  { num:17, dir:'across', clue:'_____ horizontal dalam tabel berisi data', answer:'BARIS', cat:'doc', explain:'Baris (row) = data horizontal, kolom = data vertikal' },
-  { num:18, dir:'across', clue:'Microsoft _____ = aplikasi pengolah kata', answer:'WORD', cat:'doc', explain:'MS Word untuk membuat dokumen teks seperti laporan' },
-  { num:19, dir:'across', clue:'Fungsi =_____() untuk menjumlahkan data di spreadsheet', answer:'SUM', cat:'doc', explain:'=SUM() menghitung total dari range sel' },
-  { num:20, dir:'across', clue:'_____ Changes untuk melacak revisi dokumen', answer:'TRACK', cat:'doc', explain:'Track Changes mencatat setiap perubahan di dokumen' },
-  { num:21, dir:'across', clue:'_____ web untuk mengakses internet', answer:'BROWSER', cat:'lateral', explain:'Browser = Chrome, Firefox, Edge untuk browsing' },
-  { num:22, dir:'across', clue:'Lawan dari hoaks = _____', answer:'FAKTA', cat:'fact', explain:'Fakta = informasi yang benar dan dapat diverifikasi' },
-  { num:23, dir:'across', clue:'_____ informasi harus kredibel dan dapat dipercaya', answer:'SUMBER', cat:'fact', explain:'Sumber kredibel: .go.id, .ac.id, media resmi' },
-  { num:24, dir:'across', clue:'_____ vertikal dalam tabel berisi kategori data', answer:'KOLOM', cat:'doc', explain:'Kolom = data vertikal, baris = data horizontal' },
-  { num:25, dir:'across', clue:'Microsoft _____ = aplikasi spreadsheet', answer:'EXCEL', cat:'doc', explain:'MS Excel untuk pengolahan data numerik dan tabel' },
-  
-  // MENURUN (26-50)
-  { num:26, dir:'down', clue:'Operator _____:pdf untuk mencari file PDF', answer:'FILETYPE', cat:'se', explain:'filetype: membatasi hasil hanya untuk format file tertentu' },
-  { num:27, dir:'down', clue:'Google _____ untuk mencari jurnal ilmiah', answer:'SCHOLAR', cat:'se', explain:'Google Scholar = mesin pencari khusus akademik' },
-  { num:28, dir:'down', clue:'_____ pencarian: site:, filetype:, tanda kutip', answer:'OPERATOR', cat:'se', explain:'Operator khusus membantu pencarian lebih presisi' },
-  { num:29, dir:'down', clue:'_____ situs: .go.id, .ac.id, .com', answer:'DOMAIN', cat:'se', explain:'Domain menunjukkan jenis organisasi (pemerintah, akademik, komersial)' },
-  { num:30, dir:'down', clue:'Hasil pencarian yang _____ = sesuai dengan query', answer:'RELEVAN', cat:'se', explain:'Relevansi = kesesuaian hasil dengan kata kunci' },
-  { num:31, dir:'down', clue:'_____ = Media Alert Indonesia, pemeriksa fakta', answer:'MAFINDO', cat:'fact', explain:'Mafindo = komunitas pemeriksa fakta di Indonesia' },
-  { num:32, dir:'down', clue:'_____ informasi = proses memastikan kebenaran', answer:'VERIFIKASI', cat:'fact', explain:'Verifikasi = cek kebenaran informasi dari sumber terpercaya' },
-  { num:33, dir:'down', clue:'Sumber _____ = dapat dipercaya dan diakui', answer:'KREDIBEL', cat:'fact', explain:'Kredibel = memiliki kredibilitas, dapat dipercaya' },
-  { num:34, dir:'down', clue:'Situs _____ (.ac.id) = institusi pendidikan', answer:'AKADEMIK', cat:'fact', explain:'Domain .ac.id = academic, untuk institusi pendidikan tinggi' },
-  { num:35, dir:'down', clue:'Judul _____ = ciri hoaks, menarik perhatian berlebihan', answer:'SENSASIONAL', cat:'fact', explain:'Hoaks sering pakai judul sensasional untuk viral' },
-  { num:36, dir:'down', clue:'Membaca _____ = buka tab baru untuk verifikasi', answer:'LATERAL', cat:'lateral', explain:'Lateral reading = teknik verifikasi dengan membuka sumber lain' },
-  { num:37, dir:'down', clue:'Sumber _____ = tidak berafiliasi dengan pihak tertentu', answer:'INDEPENDEN', cat:'lateral', explain:'Independen = mandiri, tidak memihak' },
-  { num:38, dir:'down', clue:'Cek siapa _____: kredibilitas dan track record', answer:'PENULIS', cat:'lateral', explain:'Cek kredibilitas penulis: ahli di bidangnya?' },
-  { num:39, dir:'down', clue:'Cek siapa _____: media resmi atau blog pribadi?', answer:'PENERBIT', cat:'lateral', explain:'Penerbit = pihak yang mempublikasikan informasi' },
-  { num:40, dir:'down', clue:'_____ dengan merek tertentu = bias potensial', answer:'AFILIASI', cat:'lateral', explain:'Afiliasi = hubungan dengan organisasi/merek tertentu' },
-  { num:41, dir:'down', clue:'Klaim harus didukung _____ yang jelas', answer:'BUKTI', cat:'lateral', explain:'Bukti = data, fakta, atau referensi yang mendukung klaim' },
-  { num:42, dir:'down', clue:'_____ muncul di bagian bawah setiap halaman', answer:'FOOTER', cat:'doc', explain:'Footer = bagian bawah halaman, untuk nomor halaman, dll' },
-  { num:43, dir:'down', clue:'Track _____ = fitur melacak revisi di Word', answer:'CHANGES', cat:'doc', explain:'Track Changes = fitur untuk merevisi dokumen kolaboratif' },
-  { num:44, dir:'down', clue:'Fungsi =_____() untuk menghitung rata-rata', answer:'AVERAGE', cat:'doc', explain:'=AVERAGE() menghitung rata-rata dari range sel' },
-  { num:45, dir:'down', clue:'Mesin _____ = search engine', answer:'PENCARIAN', cat:'se', explain:'Mesin pencarian = search engine seperti Google, Bing' },
-  { num:46, dir:'down', clue:'Media _____ = media tingkat negara', answer:'NASIONAL', cat:'fact', explain:'Media nasional = media yang beredar di seluruh Indonesia' },
-  { num:47, dir:'down', clue:'Konten _____ = bertujuan memicu emosi', answer:'PROVOKATIF', cat:'fact', explain:'Provokatif = bertujuan memancing reaksi emosional' },
-  { num:48, dir:'down', clue:'_____ naskah = orang yang mengedit dokumen', answer:'EDITOR', cat:'doc', explain:'Editor = orang yang mengoreksi dan menyunting dokumen' },
-  { num:49, dir:'down', clue:'_____ dokumen = tata letak dan gaya penulisan', answer:'FORMAT', cat:'doc', explain:'Format = pengaturan tampilan dokumen (font, margin, dll)' },
-  { num:50, dir:'down', clue:'_____ awal = versi pertama dokumen sebelum final', answer:'DRAFT', cat:'doc', explain:'Draft = konsep awal dokumen yang masih bisa direvisi' }
+  // PENGOLAHAN DOKUMEN (16)
+  { w: "HEADER", c: "Bagian atas halaman (kop surat)", cat: "doc" },
+  { w: "TABEL", c: "Insert → ___ untuk menyusun data", cat: "doc" },
+  { w: "BARIS", c: "Row horizontal dalam tabel", cat: "doc" },
+  { w: "WORD", c: "Microsoft ___ pengolah kata", cat: "doc" },
+  { w: "SUM", c: "Fungsi Excel =___() penjumlahan", cat: "doc" },
+  { w: "TRACK", c: "___ Changes fitur revisi Word", cat: "doc" },
+  { w: "KOLOM", c: "Column vertikal dalam tabel", cat: "doc" },
+  { w: "EXCEL", c: "Microsoft ___ spreadsheet", cat: "doc" },
+  { w: "FOOTER", c: "Bagian bawah halaman", cat: "doc" },
+  { w: "CHANGES", c: "Perubahan yang dilacak di dokumen", cat: "doc" },
+  { w: "AVERAGE", c: "Fungsi rata-rata di Excel", cat: "doc" },
+  { w: "EDITOR", c: "Orang yang menyunting naskah", cat: "doc" },
+  { w: "FORMAT", c: "Pengaturan gaya tulisan", cat: "doc" },
+  { w: "DRAFT", c: "Versi kasar dokumen", cat: "doc" },
+  { w: "NASIONAL", c: "Media tingkat negara", cat: "fact" },
+  { w: "PROVOKATIF", c: "Isi yang memancing amarah", cat: "fact" }
 ];
 
 // ============ STATE ============
-const state = {
-  score: 0,
-  answered: new Set(),
-  streak: 0,
-  currentQ: null,
-  currentTab: 'across',
-  startTime: Date.now(),
-  timerInterval: null
-};
+const SIZE = 25;
+const grid = Array(SIZE).fill(null).map(() => Array(SIZE).fill(null));
+const placedWords = []; // Akan berisi: {w, c, cat, r, col, dir, num}
+let currentDir = 'across';
+let selectedCell = null;
+let score = 0;
+let solvedWords = new Set();
+let startTime = Date.now();
+
+// ============ CROSSWORD GENERATOR (SIMPLIFIED & FIXED) ============
+function canPlace(word, r, c, dir) {
+  const len = word.length;
+  
+  if (dir === 'across') {
+    if (c < 0 || c + len > SIZE) return false;
+    if (c > 0 && grid[r][c-1] !== null) return false;
+    if (c + len < SIZE && grid[r][c+len] !== null) return false;
+    
+    let intersections = 0;
+    for (let i = 0; i < len; i++) {
+      const cell = grid[r][c+i];
+      if (cell !== null) {
+        if (cell !== word[i]) return false;
+        intersections++;
+      } else {
+        if (r > 0 && grid[r-1][c+i] !== null) return false;
+        if (r < SIZE-1 && grid[r+1][c+i] !== null) return false;
+      }
+    }
+    if (placedWords.length > 0 && intersections === 0) return false;
+    return true;
+  } else {
+    if (r < 0 || r + len > SIZE) return false;
+    if (r > 0 && grid[r-1][c] !== null) return false;
+    if (r + len < SIZE && grid[r+len][c] !== null) return false;
+    
+    let intersections = 0;
+    for (let i = 0; i < len; i++) {
+      const cell = grid[r+i][c];
+      if (cell !== null) {
+        if (cell !== word[i]) return false;
+        intersections++;
+      } else {
+        if (c > 0 && grid[r+i][c-1] !== null) return false;
+        if (c < SIZE-1 && grid[r+i][c+1] !== null) return false;
+      }
+    }
+    if (placedWords.length > 0 && intersections === 0) return false;
+    return true;
+  }
+}
+
+function generateCrossword() {
+  // Sort by length descending
+  const sorted = [...wordsData].sort((a,b) => b.w.length - a.w.length);
+  
+  // Place first word horizontally in center
+  const first = sorted.shift();
+  const startR = Math.floor(SIZE/2);
+  const startC = Math.floor((SIZE - first.w.length)/2);
+  
+  // Place first word
+  for (let i = 0; i < first.w.length; i++) {
+    grid[startR][startC + i] = first.w[i];
+  }
+  placedWords.push({ ...first, r: startR, col: startC, dir: 'across', num: 0 });
+  
+  // Try to place remaining words
+  let remaining = [...sorted];
+  
+  for (let pass = 0; pass < 15 && remaining.length > 0; pass++) {
+    const nextRemaining = [];
+    
+    // Shuffle
+    for (let i = remaining.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i+1));
+      [remaining[i], remaining[j]] = [remaining[j], remaining[i]];
+    }
+    
+    for (const wordObj of remaining) {
+      let bestPlacement = null;
+      let bestScore = -Infinity;
+      
+      for (const pw of placedWords) {
+        for (let i = 0; i < pw.w.length; i++) {
+          const exR = pw.dir === 'across' ? pw.r : pw.r + i;
+          const exC = pw.dir === 'across' ? pw.col + i : pw.col;
+          const exChar = pw.w[i];
+          
+          for (let j = 0; j < wordObj.w.length; j++) {
+            if (wordObj.w[j] === exChar) {
+              let newR, newC, newDir;
+              if (pw.dir === 'across') {
+                newDir = 'down';
+                newR = exR - j;
+                newC = exC;
+              } else {
+                newDir = 'across';
+                newR = exR;
+                newC = exC - j;
+              }
+              
+              if (canPlace(wordObj.w, newR, newC, newDir)) {
+                const centerR = SIZE/2, centerC = SIZE/2;
+                const wordCenterR = newDir === 'across' ? newR : newR + wordObj.w.length/2;
+                const wordCenterC = newDir === 'across' ? newC + wordObj.w.length/2 : newC;
+                const dist = Math.abs(wordCenterR - centerR) + Math.abs(wordCenterC - centerC);
+                const scoreVal = -dist + (wordObj.w.length * 0.1);
+                
+                if (scoreVal > bestScore) {
+                  bestScore = scoreVal;
+                  bestPlacement = { r: newR, col: newC, dir: newDir };
+                }
+              }
+            }
+          }
+        }
+      }
+      
+      if (bestPlacement) {
+        for (let i = 0; i < wordObj.w.length; i++) {
+          if (bestPlacement.dir === 'across') {
+            grid[bestPlacement.r][bestPlacement.col + i] = wordObj.w[i];
+          } else {
+            grid[bestPlacement.r + i][bestPlacement.col] = wordObj.w[i];
+          }
+        }
+        placedWords.push({ ...wordObj, r: bestPlacement.r, col: bestPlacement.col, dir: bestPlacement.dir, num: 0 });
+      } else {
+        nextRemaining.push(wordObj);
+      }
+    }
+    
+    remaining = nextRemaining;
+  }
+  
+  // ============ ASSIGN NUMBERS (SIMPLIFIED) ============
+  // Find all start cells
+  const startCellMap = new Map(); // key: "r,c", value: [words]
+  
+  placedWords.forEach(pw => {
+    const key = `${pw.r},${pw.col}`;
+    if (!startCellMap.has(key)) startCellMap.set(key, []);
+    startCellMap.get(key).push(pw);
+  });
+  
+  // Sort start cells by reading order (top-to-bottom, left-to-right)
+  const sortedStartCells = Array.from(startCellMap.entries()).sort((a, b) => {
+    const [ar, ac] = a[0].split(',').map(Number);
+    const [br, bc] = b[0].split(',').map(Number);
+    if (ar !== br) return ar - br;
+    return ac - bc;
+  });
+  
+  // Assign numbers
+  let num = 1;
+  sortedStartCells.forEach(([key, words]) => {
+    words.forEach(w => w.num = num);
+    num++;
+  });
+  
+  return { placed: placedWords.length, total: wordsData.length };
+}
 
 // ============ RENDER GRID ============
 function renderGrid() {
-  const gridEl = document.getElementById('ttsGrid');
-  gridEl.innerHTML = '';
+  const container = document.getElementById('gridContainer');
+  container.innerHTML = '';
+  container.style.gridTemplateColumns = `repeat(${SIZE}, 32px)`;
   
-  // Find which cells have numbers
-  const numberedCells = {};
-  wordLayout.forEach(w => {
-    const key = `${w.row}-${w.col}`;
-    if (!numberedCells[key]) numberedCells[key] = [];
-    numberedCells[key].push(w.num);
+  // Build number map (use smallest number for each cell)
+  const numberMap = {};
+  placedWords.forEach(pw => {
+    if (pw.num) {
+      const key = `${pw.r},${pw.col}`;
+      if (!numberMap[key] || pw.num < numberMap[key]) {
+        numberMap[key] = pw.num;
+      }
+    }
   });
   
-  for (let r = 0; r < GRID_SIZE; r++) {
-    for (let c = 0; c < GRID_SIZE; c++) {
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
       const cell = document.createElement('div');
-      cell.className = 'cell';
-      cell.dataset.row = r;
-      cell.dataset.col = c;
+      const key = `${r},${c}`;
       
       if (grid[r][c]) {
-        cell.classList.add('active');
+        cell.className = 'cell white';
+        cell.dataset.row = r;
+        cell.dataset.col = c;
         
-        // Add number if this is start of a word
-        const key = `${r}-${c}`;
-        if (numberedCells[key]) {
-          const numSpan = document.createElement('span');
-          numSpan.className = 'cell-number';
-          numSpan.textContent = Math.min(...numberedCells[key]);
-          cell.appendChild(numSpan);
-        }
-        
-        // Add input
         const input = document.createElement('input');
         input.type = 'text';
         input.maxLength = 1;
         input.dataset.row = r;
         input.dataset.col = c;
-        input.oninput = (e) => handleInput(e, r, c);
+        input.oninput = handleInput;
         input.onfocus = () => selectCell(r, c);
         cell.appendChild(input);
         
-        cell.onclick = () => selectCell(r, c);
+        if (numberMap[key]) {
+          const span = document.createElement('span');
+          span.className = 'cell-num';
+          span.textContent = numberMap[key];
+          cell.appendChild(span);
+        }
       } else {
-        cell.classList.add('black');
+        cell.className = 'cell';
       }
-      
-      gridEl.appendChild(cell);
+      container.appendChild(cell);
     }
-  }
-}
-
-function handleInput(e, row, col) {
-  const val = e.target.value.toUpperCase();
-  e.target.value = val;
-  
-  // Auto-advance to next cell
-  if (val && state.currentQ) {
-    const q = questions.find(q => q.num === state.currentQ);
-    if (q) {
-      const wordData = wordLayout.find(w => w.num === q.num);
-      const idx = getWordIndex(wordData, row, col);
-      if (idx !== -1 && idx < wordData.word.length - 1) {
-        const nextR = q.dir === 'across' ? row : row + 1;
-        const nextC = q.dir === 'across' ? col + 1 : col;
-        const nextInput = document.querySelector(`input[data-row="${nextR}"][data-col="${nextC}"]`);
-        if (nextInput) nextInput.focus();
-      }
-    }
-  }
-}
-
-function getWordIndex(wordData, row, col) {
-  for (let i = 0; i < wordData.word.length; i++) {
-    const r = wordData.dir === 'across' ? wordData.row : wordData.row + i;
-    const c = wordData.dir === 'across' ? wordData.col + i : wordData.col;
-    if (r === row && c === col) return i;
-  }
-  return -1;
-}
-
-function selectCell(row, col) {
-  // Clear previous selection
-  document.querySelectorAll('.cell').forEach(c => {
-    c.classList.remove('selected', 'highlight');
-  });
-  
-  // Highlight current cell
-  const cell = document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
-  if (cell) cell.classList.add('selected');
-  
-  // Find which question this cell belongs to
-  const cellData = grid[row][col];
-  if (cellData && cellData.words.length > 0) {
-    const qNum = cellData.words[0];
-    state.currentQ = qNum;
-    
-    // Highlight all cells in this word
-    const wordData = wordLayout.find(w => w.num === qNum);
-    if (wordData) {
-      for (let i = 0; i < wordData.word.length; i++) {
-        const r = wordData.dir === 'across' ? wordData.row : wordData.row + i;
-        const c = wordData.dir === 'across' ? wordData.col + i : wordData.col;
-        const wCell = document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
-        if (wCell) wCell.classList.add('highlight');
-      }
-    }
-    
-    // Update question list
-    updateQuestionList();
   }
 }
 
 // ============ RENDER QUESTIONS ============
 function renderQuestions() {
-  updateQuestionList();
-}
-
-function updateQuestionList() {
   const list = document.getElementById('questionList');
-  const filtered = questions.filter(q => q.dir === state.currentTab);
+  list.innerHTML = '';
   
-  list.innerHTML = filtered.map(q => `
-    <div class="question-item ${state.answered.has(q.num)?'answered':''} ${state.currentQ===q.num?'current':''}" 
-         onclick="selectQuestion(${q.num})">
-      <span class="q-number">${q.num}</span>
-      <span class="q-direction">${q.dir === 'across' ? '→' : '↓'}</span>
-      <span class="q-category cat-${q.cat}">${getCatName(q.cat)}</span>
-      <div class="q-clue">${q.clue}</div>
-    </div>
-  `).join('');
-}
-
-function getCatName(cat) {
-  const names = { se:'Search Engine', fact:'Fakta', lateral:'Lateral', doc:'Dokumen' };
-  return names[cat] || cat;
-}
-
-function switchTab(tab) {
-  state.currentTab = tab;
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  event.target.classList.add('active');
-  updateQuestionList();
-}
-
-function selectQuestion(num) {
-  state.currentQ = num;
-  const q = questions.find(q => q.num === num);
-  const wordData = wordLayout.find(w => w.num === num);
+  const filtered = placedWords.filter(pw => pw.dir === currentDir && pw.num);
+  filtered.sort((a,b) => a.num - b.num);
   
-  // Highlight word in grid
-  document.querySelectorAll('.cell').forEach(c => c.classList.remove('selected', 'highlight'));
-  
-  if (wordData) {
-    for (let i = 0; i < wordData.word.length; i++) {
-      const r = wordData.dir === 'across' ? wordData.row : wordData.row + i;
-      const c = wordData.dir === 'across' ? wordData.col + i : wordData.col;
-      const cell = document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
-      if (cell) {
-        cell.classList.add('highlight');
-        if (i === 0) cell.classList.add('selected');
-      }
-    }
-    
-    // Focus first input
-    const firstR = wordData.row;
-    const firstC = wordData.col;
-    const firstInput = document.querySelector(`input[data-row="${firstR}"][data-col="${firstC}"]`);
-    if (firstInput) firstInput.focus();
-  }
-  
-  updateQuestionList();
-}
-
-// ============ CHECK ANSWERS ============
-function checkAllAnswers() {
-  let correct = 0;
-  let total = 0;
-  
-  questions.forEach(q => {
-    const wordData = wordLayout.find(w => w.num === q.num);
-    if (!wordData) return;
-    
-    let wordCorrect = true;
-    for (let i = 0; i < q.answer.length; i++) {
-      const r = q.dir === 'across' ? wordData.row : wordData.row + i;
-      const c = q.dir === 'across' ? wordData.col + i : wordData.col;
-      const input = document.querySelector(`input[data-row="${r}"][data-col="${c}"]`);
-      
-      if (input) {
-        total++;
-        if (input.value.toUpperCase() === q.answer[i]) {
-          input.parentElement.classList.add('correct');
-          input.parentElement.classList.remove('wrong');
-        } else {
-          input.parentElement.classList.add('wrong');
-          input.parentElement.classList.remove('correct');
-          wordCorrect = false;
-        }
-      }
-    }
-    
-    if (wordCorrect && !state.answered.has(q.num)) {
-      state.answered.add(q.num);
-      state.score += 20;
-      state.streak++;
-      correct++;
-      
-      // Show feedback
-      showFeedback(q);
-    }
-  });
-  
-  updateStats();
-  
-  if (state.answered.size === 50) {
-    setTimeout(() => showWinScreen(), 1000);
-  }
-}
-
-function showFeedback(q) {
-  const feedback = document.createElement('div');
-  feedback.className = 'feedback';
-  feedback.innerHTML = `
-    <strong>✅ Benar! +20 poin</strong><br>
-    <b>${q.num}. ${q.answer}</b> - ${q.explain}
-  `;
-  document.querySelector('.grid-container').appendChild(feedback);
-  setTimeout(() => feedback.remove(), 4000);
-}
-
-function revealAnswer() {
-  if (!state.currentQ) {
-    alert('Pilih pertanyaan dulu!');
+  if (filtered.length === 0) {
+    list.innerHTML = '<p style="color:#aaa; text-align:center; padding:20px;">Tidak ada pertanyaan untuk arah ini.</p>';
     return;
   }
   
-  const q = questions.find(q => q.num === state.currentQ);
-  const wordData = wordLayout.find(w => w.num === state.currentQ);
-  
-  if (q && wordData) {
-    for (let i = 0; i < q.answer.length; i++) {
-      const r = q.dir === 'across' ? wordData.row : wordData.row + i;
-      const c = q.dir === 'across' ? wordData.col + i : wordData.col;
-      const input = document.querySelector(`input[data-row="${r}"][data-col="${c}"]`);
-      if (input) {
-        input.value = q.answer[i];
-        input.parentElement.classList.add('correct');
-      }
-    }
+  filtered.forEach(pw => {
+    const div = document.createElement('div');
+    div.className = 'q-item';
+    div.id = `q-${pw.num}-${pw.dir}`;
+    div.dataset.num = pw.num;
+    div.dataset.dir = pw.dir;
+    div.onclick = () => jumpToWord(pw.num, pw.dir);
     
-    if (!state.answered.has(q.num)) {
-      state.answered.add(q.num);
-      state.score += 10; // Less points for reveal
-      updateStats();
+    const catClass = `cat-${pw.cat}`;
+    const catName = { se:'Search', fact:'Fakta', lat:'Lateral', doc:'Dokumen' }[pw.cat];
+    
+    div.innerHTML = `
+      <div class="q-header">
+        <span class="q-num">${pw.num}. <span class="q-cat ${catClass}">${catName}</span></span>
+        <span class="q-len">(${pw.w.length} huruf)</span>
+      </div>
+      <div>${pw.c}</div>
+    `;
+    list.appendChild(div);
+  });
+  
+  // Update counts
+  const acrossCount = placedWords.filter(pw => pw.dir === 'across' && pw.num).length;
+  const downCount = placedWords.filter(pw => pw.dir === 'down' && pw.num).length;
+  document.getElementById('countAcross').textContent = acrossCount;
+  document.getElementById('countDown').textContent = downCount;
+}
+
+// ============ INTERACTION ============
+function filterQuestions(dir) {
+  currentDir = dir;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(dir === 'across' ? 'tabAcross' : 'tabDown').classList.add('active');
+  renderQuestions();
+}
+
+function selectCell(r, c) {
+  document.querySelectorAll('.cell').forEach(el => {
+    el.classList.remove('selected', 'highlighted');
+  });
+  document.querySelectorAll('.q-item').forEach(el => el.classList.remove('current'));
+  
+  selectedCell = {r, c};
+  const cellEl = document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+  if (cellEl) cellEl.classList.add('selected');
+  
+  const wordsHere = placedWords.filter(pw => {
+    if (pw.dir === 'across') return pw.r === r && c >= pw.col && c < pw.col + pw.w.length;
+    else return pw.col === c && r >= pw.r && r < pw.r + pw.w.length;
+  });
+  
+  if (wordsHere.length > 0) {
+    const targetWord = wordsHere.find(w => w.dir === currentDir) || wordsHere[0];
+    highlightWord(targetWord);
+    
+    const qItem = document.getElementById(`q-${targetWord.num}-${targetWord.dir}`);
+    if (qItem) {
+      qItem.classList.add('current');
+      qItem.scrollIntoView({behavior:'smooth', block:'nearest'});
     }
   }
 }
 
-function resetGame() {
-  if (!confirm('Yakin ingin reset? Semua jawaban akan dihapus.')) return;
+function highlightWord(pw) {
+  for (let i = 0; i < pw.w.length; i++) {
+    const r = pw.dir === 'across' ? pw.r : pw.r + i;
+    const c = pw.dir === 'across' ? pw.col + i : pw.col;
+    const el = document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+    if (el) el.classList.add('highlighted');
+  }
+}
+
+function jumpToWord(num, dir) {
+  const pw = placedWords.find(w => w.num === num && w.dir === dir);
+  if (pw) {
+    currentDir = dir;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(dir === 'across' ? 'tabAcross' : 'tabDown').classList.add('active');
+    selectCell(pw.r, pw.col);
+    const input = document.querySelector(`.cell[data-row="${pw.r}"][data-col="${pw.col}"] input`);
+    if (input) input.focus();
+  }
+}
+
+function handleInput(e) {
+  const val = e.target.value.toUpperCase();
+  e.target.value = val;
   
-  state.score = 0;
-  state.answered = new Set();
-  state.streak = 0;
-  state.currentQ = null;
+  const r = parseInt(e.target.dataset.row);
+  const c = parseInt(e.target.dataset.col);
   
-  document.querySelectorAll('input').forEach(input => {
-    input.value = '';
-    input.parentElement.classList.remove('correct', 'wrong');
+  const wordsHere = placedWords.filter(pw => {
+    if (pw.dir === 'across') return pw.r === r && c >= pw.col && c < pw.col + pw.w.length;
+    else return pw.col === c && r >= pw.r && r < pw.r + pw.w.length;
+  });
+  
+  const activeWord = wordsHere.find(w => w.dir === currentDir) || wordsHere[0];
+  
+  if (activeWord && val) {
+    let nextR, nextC;
+    if (activeWord.dir === 'across') {
+      nextR = r; nextC = c + 1;
+    } else {
+      nextR = r + 1; nextC = c;
+    }
+    
+    const nextInput = document.querySelector(`.cell[data-row="${nextR}"][data-col="${nextC}"] input`);
+    if (nextInput) nextInput.focus();
+  }
+}
+
+// ============ GAME LOGIC ============
+function checkAnswers() {
+  let newlySolved = 0;
+  
+  placedWords.forEach(pw => {
+    if (!pw.num) return;
+    let isCorrect = true;
+    
+    for (let i = 0; i < pw.w.length; i++) {
+      const r = pw.dir === 'across' ? pw.r : pw.r + i;
+      const c = pw.dir === 'across' ? pw.col + i : pw.col;
+      const input = document.querySelector(`.cell[data-row="${r}"][data-col="${c}"] input`);
+      if (!input || input.value.toUpperCase() !== pw.w[i]) {
+        isCorrect = false;
+        break;
+      }
+    }
+    
+    const qKey = `${pw.num}-${pw.dir}`;
+    const qItem = document.getElementById(`q-${qKey}`);
+    
+    if (isCorrect) {
+      if (!solvedWords.has(qKey)) {
+        solvedWords.add(qKey);
+        score += 20;
+        newlySolved++;
+        if (qItem) qItem.classList.add('solved');
+        
+        for (let i = 0; i < pw.w.length; i++) {
+          const r = pw.dir === 'across' ? pw.r : pw.r + i;
+          const c = pw.dir === 'across' ? pw.col + i : pw.col;
+          const cell = document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+          if (cell) cell.classList.add('correct-word');
+        }
+      }
+    } else {
+      if (qItem) qItem.classList.remove('solved');
+    }
   });
   
   updateStats();
+  
+  if (newlySolved > 0) {
+    showFeedback(`✅ ${newlySolved} kata benar! +${newlySolved * 20} poin`);
+  } else {
+    showFeedback(`Terpecahkan: ${solvedWords.size}/${placedWords.length}`);
+  }
+  
+  if (solvedWords.size === placedWords.length && placedWords.length > 0) {
+    setTimeout(() => {
+      showFeedback(`🎉 SELAMAT! SEMUA ${placedWords.length} KATA BERHASIL DIPECAHKAN!`);
+    }, 500);
+  }
 }
 
-// ============ STATS ============
+function revealCurrent() {
+  if (!selectedCell) {
+    alert("Pilih kotak atau pertanyaan dulu!");
+    return;
+  }
+  
+  const r = selectedCell.r;
+  const c = selectedCell.c;
+  
+  const wordsHere = placedWords.filter(pw => {
+    if (pw.dir === 'across') return pw.r === r && c >= pw.col && c < pw.col + pw.w.length;
+    else return pw.col === c && r >= pw.r && r < pw.r + pw.w.length;
+  });
+  
+  const pw = wordsHere.find(w => w.dir === currentDir) || wordsHere[0];
+  if (!pw) return;
+  
+  for (let i = 0; i < pw.w.length; i++) {
+    const rr = pw.dir === 'across' ? pw.r : pw.r + i;
+    const cc = pw.dir === 'across' ? pw.col + i : pw.col;
+    const input = document.querySelector(`.cell[data-row="${rr}"][data-col="${cc}"] input`);
+    if (input) input.value = pw.w[i];
+  }
+  
+  checkAnswers();
+}
+
+function clearBoard() {
+  if (!confirm('Yakin ingin reset semua jawaban?')) return;
+  document.querySelectorAll('input').forEach(i => i.value = '');
+  document.querySelectorAll('.cell').forEach(c => c.classList.remove('correct-word'));
+  document.querySelectorAll('.q-item').forEach(i => i.classList.remove('solved'));
+  solvedWords = new Set();
+  score = 0;
+  updateStats();
+}
+
 function updateStats() {
-  document.getElementById('score').textContent = state.score;
-  document.getElementById('progress').textContent = `${state.answered.size}/50`;
-  document.getElementById('streak').textContent = state.streak;
-  document.getElementById('progressBar').style.width = `${(state.answered.size/50)*100}%`;
+  document.getElementById('score').textContent = score;
+  document.getElementById('progress').textContent = `${solvedWords.size}/${placedWords.length}`;
+  document.getElementById('placed').textContent = `${placedWords.length}/${wordsData.length}`;
+}
+
+function showFeedback(msg) {
+  const fb = document.getElementById('feedback');
+  fb.textContent = msg;
+  fb.style.display = 'block';
+  setTimeout(() => fb.style.display = 'none', 4000);
 }
 
 // ============ TIMER ============
-function startTimer() {
-  state.timerInterval = setInterval(() => {
-    const elapsed = Math.floor((Date.now() - state.startTime) / 1000);
-    const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
-    const s = String(elapsed % 60).padStart(2, '0');
-    document.getElementById('timer').textContent = `${m}:${s}`;
-  }, 1000);
-}
-
-// ============ WIN SCREEN ============
-function showWinScreen() {
-  clearInterval(state.timerInterval);
-  
-  const content = document.querySelector('.container');
-  content.innerHTML = `
-    <div class="win-screen">
-      <h2>🎉 SELAMAT! TTS SELESAI! 🎉</h2>
-      <p style="font-size:1.2em;">Kamu berhasil menyelesaikan semua 50 pertanyaan!</p>
-      <p style="margin:15px 0;">Skor Akhir: <strong style="color:#f39c12;font-size:2em;">${state.score}</strong></p>
-      <p style="margin:10px 0;">Waktu: <b>${document.getElementById('timer').textContent}</b></p>
-      
-      <h3 style="color:#f39c12;margin:20px 0;">📚 Materi yang Dikuasai:</h3>
-      <div style="text-align:left;max-width:500px;margin:15px auto;">
-        <ul style="list-style:none;line-height:2;">
-          <li>✅ <b>Search Engine</b> - Operator pencarian, kata kunci, filetype</li>
-          <li>✅ <b>Pemeriksa Fakta</b> - Hoaks, verifikasi, sumber kredibel</li>
-          <li>✅ <b>Membaca Lateral</b> - Tab baru, kredibilitas, independen</li>
-          <li>✅ <b>Pengolahan Dokumen</b> - Header, tabel, fungsi spreadsheet</li>
-        </ul>
-      </div>
-      
-      <div class="btn-group" style="justify-content:center;">
-        <button class="btn" onclick="location.reload()">🔄 Main Lagi</button>
-      </div>
-    </div>
-  `;
-}
+setInterval(() => {
+  const diff = Math.floor((Date.now() - startTime) / 1000);
+  const m = String(Math.floor(diff/60)).padStart(2,'0');
+  const s = String(diff%60).padStart(2,'0');
+  document.getElementById('timer').textContent = `${m}:${s}`;
+}, 1000);
 
 // ============ INIT ============
+console.log('Starting crossword generation...');
+const result = generateCrossword();
+console.log(`Placed ${result.placed}/${result.total} words`);
+console.log('Placed words:', placedWords.map(pw => `${pw.num}:${pw.w}(${pw.dir})`));
+
+// Debug info
+if (placedWords.length === 0) {
+  const debug = document.getElementById('debugInfo');
+  debug.style.display = 'block';
+  debug.textContent = '⚠️ Tidak ada kata yang terpasang. Refresh halaman untuk mencoba lagi.';
+} else if (placedWords.length < wordsData.length) {
+  const debug = document.getElementById('debugInfo');
+  debug.style.display = 'block';
+  debug.textContent = `ℹ️ ${placedWords.length}/${wordsData.length} kata berhasil dipasang. Beberapa kata terlalu panjang/sulit berpotongan.`;
+}
+
 renderGrid();
 renderQuestions();
 updateStats();
-startTimer();
 </script>
 </body>
 </html>
