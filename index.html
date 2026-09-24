@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>🎯 TTS Informatika - FINAL</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', sans-serif; }
+  body {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    min-height:100vh; color:#fff; padding:10px;
+  }
+  .container { max-width:1400px; margin:auto; }
+  .header {
+    text-align:center; padding:15px;
+    background:rgba(0,0,0,0.4); border-radius:12px;
+    border:2px solid #f39c12; margin-bottom:15px;
+  }
+  .header h1 { color:#f39c12; font-size:1.6em; }
+  .stats-bar {
+    display:flex; justify-content:space-around; flex-wrap:wrap; gap:10px;
+    background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; margin-bottom:15px;
+  }
+  .stat-item { text-align:center; }
+  .stat-val { font-size:1.3em; font-weight:bold; color:#f39c12; }
+  .stat-lbl { font-size:0.8em; color:#aaa; }
+  
+  .main-layout {
+    display:grid; grid-template-columns: 1fr 400px; gap:20px;
+  }
+  @media(max-width:1000px) { .main-layout { grid-template-columns: 1fr; } }
+
+  .grid-wrapper {
+    background:rgba(0,0,0,0.3); padding:15px; border-radius:12px;
+    overflow-x:auto;
+  }
+  .tts-grid {
+    display:grid; gap:2px; margin:auto;
+  }
+  .cell {
+    width:32px; height:32px;
+    background:#444; border:1px solid #333;
+    position:relative; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .cell.white { background:#fff; border-color:#ccc; }
+  .cell.selected { background:#ffeaa7 !important; outline:2px solid #d35400; z-index:2; }
+  .cell.highlighted { background:#74b9ff !important; }
+  .cell.correct-word { background:#a8e6cf !important; }
+  .cell input {
+    width:100%; height:100%; border:none; background:transparent;
+    text-align:center; font-size:1.1em; font-weight:bold; text-transform:uppercase;
+    outline:none; color:#2d3436;
+  }
+  .cell-num {
+    position:absolute; top:0px; left:2px; font-size:0.55em; color:#636e72; font-weight:normal;
+    pointer-events:none;
+  }
+  
+  .question-panel {
+    background:rgba(0,0,0,0.3); padding:15px; border-radius:12px;
+    height:650px; overflow-y:auto; display:flex; flex-direction:column;
+  }
+  .panel-title {
+    color:#f39c12; font-weight:bold; margin-bottom:10px; font-size:1.1em;
+    text-align:center; padding-bottom:8px; border-bottom:2px solid #f39c12;
+  }
+  .tabs { display:flex; gap:5px; margin-bottom:10px; }
+  .tab-btn {
+    flex:1; padding:8px; background:#2d3436; border:none; color:#fff;
+    cursor:pointer; border-radius:5px; font-weight:bold;
+  }
+  .tab-btn.active { background:#f39c12; color:#000; }
+  .q-list { flex:1; overflow-y:auto; }
+  .q-item {
+    padding:8px; margin-bottom:5px; background:rgba(255,255,255,0.05);
+    border-left:3px solid transparent; cursor:pointer; border-radius:3px;
+    font-size:0.88em; line-height:1.3;
+  }
+  .q-item:hover { background:rgba(255,255,255,0.1); }
+  .q-item.current { background:rgba(243,156,18,0.2); border-left-color:#f39c12; }
+  .q-item.solved { opacity:0.7; border-left-color:#27ae60; text-decoration:line-through; }
+  .q-header { display:flex; justify-content:space-between; margin-bottom:3px; }
+  .q-num { font-weight:bold; color:#f39c12; }
+  .q-len { font-size:0.75em; color:#aaa; }
+  .q-cat { font-size:0.7em; padding:1px 5px; border-radius:3px; color:#fff; }
+  .cat-se { background:#3498db; }
+  .cat-fact { background:#e74c3c; }
+  .cat-lat { background:#9b59b6; }
+  .cat-doc { background:#27ae60; }
+
+  .controls { margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; }
+  .btn {
+    padding:8px 12px; border:none; border-radius:5px; cursor:pointer;
+    font-weight:bold; background:#f39c12; color:#000; font-size:0.85em;
+  }
+  .btn-secondary { background:#555; color:#fff; }
+  .btn-check { background:#27ae60; color:#fff; }
+  .btn-hint { background:#3498db; color:#fff; }
+  
+  .feedback-msg {
+    margin-top:10px; padding:10px; border-radius:5px; display:none;
+    background:rgba(39,174,96,0.2); border:1px solid #27ae60;
+    font-size:0.9em;
+  }
+  
+  .info-box {
+    background:rgba(243,156,18,0.1); padding:10px; border-radius:5px;
+    margin-bottom:10px; font-size:0.85em; border-left:3px solid #f39c12;
+  }
+  
+  .debug-info {
+    background:rgba(231,76,60,0.2); padding:8px; border-radius:5px;
+    margin-bottom:10px; font-size:0.8em; color:#ffcccc;
+    border-left:3px solid #e74c3c;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>🧩 Teka-Teki Silang: Informatika Otomotif</h1>
+    <p style="font-size:0.9em; color:#ccc;">Search Engine • Fact Check • Lateral Reading • Document</p>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat-item"><div class="stat-val" id="score">0</div><div class="stat-lbl">Skor</div></div>
+    <div class="stat-item"><div class="stat-val" id="progress">0/0</div><div class="stat-lbl">Terpecahkan</div></div>
+    <div class="stat-item"><div class="stat-val" id="placed">0</div><div class="stat-lbl">Kata Terpasang</div></div>
+    <div class="stat-item"><div class="stat-val" id="timer">00:00</div><div class="stat-lbl">Waktu</div></div>
+  </div>
+
+  <div class="main-layout">
+    <div class="grid-wrapper">
+      <div class="info-box">
+        💡 <b>Cara main:</b> Klik kotak atau pertanyaan → ketik huruf → otomatis pindah ke kotak berikutnya.
+      </div>
+      <div id="debugInfo" class="debug-info" style="display:none;"></div>
+      <div id="gridContainer" class="tts-grid"></div>
+    </div>
+
+    <div class="question-panel">
+      <div class="panel-title">📝 DAFTAR PERTANYAAN</div>
+      <div class="tabs">
+        <button class="tab-btn active" id="tabAcross" onclick="filterQuestions('across')">→ Mendatar (<span id="countAcross">0</span>)</button>
+        <button class="tab-btn" id="tabDown" onclick="filterQuestions('down')">↓ Menurun (<span id="countDown">0</span>)</button>
+      </div>
+      
+      <div class="q-list" id="questionList">
+        <p style="color:#aaa; text-align:center; padding:20px;">Memuat pertanyaan...</p>
+      </div>
+
+      <div class="controls">
+        <button class="btn btn-check" onclick="checkAnswers()">✓ Cek Jawaban</button>
+        <button class="btn btn-hint" onclick="revealCurrent()">💡 Reveal</button>
+        <button class="btn btn-secondary" onclick="clearBoard()">🗑️ Reset</button>
+      </div>
+      <div id="feedback" class="feedback-msg"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============ DATA 50 KATA ============
+const wordsData = [
+  // SEARCH ENGINE (13)
+  { w: "GOOGLE", c: "Mesin pencari nomor 1 dunia", cat: "se" },
+  { w: "KUNCI", c: "Kata ___ yang spesifik lebih efektif", cat: "se" },
+  { w: "SITE", c: "Operator '___:go.id' untuk situs pemerintah", cat: "se" },
+  { w: "PDF", c: "Format file dokumen final", cat: "se" },
+  { w: "QUERY", c: "Istilah teknis untuk kata pencarian", cat: "se" },
+  { w: "HASIL", c: "___ pencarian muncul di halaman pertama", cat: "se" },
+  { w: "BROWSER", c: "Aplikasi web seperti Chrome/Firefox", cat: "se" },
+  { w: "FILETYPE", c: "Operator '___:pdf' mencari format tertentu", cat: "se" },
+  { w: "SCHOLAR", c: "Google ___ untuk jurnal akademik", cat: "se" },
+  { w: "OPERATOR", c: "Simbol khusus: -, \" \", site:", cat: "se" },
+  { w: "DOMAIN", c: "Akhiran URL (.com, .id, .org)", cat: "se" },
+  { w: "RELEVAN", c: "Sifat hasil pencarian yang sesuai", cat: "se" },
+  { w: "PENCARIAN", c: "Aktivitas utama di mesin pencari", cat: "se" },
+
+  // PEMERIKSA FAKTA (13)
+  { w: "HOAKS", c: "Informasi palsu yang disebarkan", cat: "fact" },
+  { w: "CEK", c: "Tindakan awal sebelum share: ___ fakta", cat: "fact" },
+  { w: "KOMINFO", c: "Kementerian pengawas informasi digital", cat: "fact" },
+  { w: "VIRAL", c: "Berita yang menyebar sangat cepat", cat: "fact" },
+  { w: "SHARE", c: "Tombol bagikan di media sosial", cat: "fact" },
+  { w: "JURNAL", c: "Sumber ilmiah terpercaya", cat: "fact" },
+  { w: "FAKTA", c: "Lawan dari hoaks", cat: "fact" },
+  { w: "SUMBER", c: "Asal usul informasi harus jelas", cat: "fact" },
+  { w: "MAFINDO", c: "Masyarakat Anti Fitnah Indonesia", cat: "fact" },
+  { w: "VERIFIKASI", c: "Proses membuktikan kebenaran data", cat: "fact" },
+  { w: "KREDIBEL", c: "Dapat dipercaya", cat: "fact" },
+  { w: "AKADEMIK", c: "Situs .ac.id bersifat ___", cat: "fact" },
+  { w: "SENSASIONAL", c: "Judul berlebihan ciri hoaks", cat: "fact" },
+
+  // MEMBACA LATERAL (8)
+  { w: "TAB", c: "Buka ___ baru saat verifikasi", cat: "lat" },
+  { w: "KLAIM", c: "Pernyataan tanpa bukti", cat: "lat" },
+  { w: "LATERAL", c: "Membaca ___ = cek sumber lain", cat: "lat" },
+  { w: "INDEPENDEN", c: "Sumber yang tidak berafiliasi", cat: "lat" },
+  { w: "PENULIS", c: "Cek kredibilitas siapa ___ artikel", cat: "lat" },
+  { w: "PENERBIT", c: "Siapa yang menerbitkan situs?", cat: "lat" },
+  { w: "AFILIASI", c: "Hubungan bisnis penulis dengan merek", cat: "lat" },
+  { w: "BUKTI", c: "Data pendukung klaim", cat: "lat" },
+
+  // PENGOLAHAN DOKUMEN (16)
+  { w: "HEADER", c: "Bagian atas halaman (kop surat)", cat: "doc" },
+  { w: "TABEL", c: "Insert → ___ untuk menyusun data", cat: "doc" },
+  { w: "BARIS", c: "Row horizontal dalam tabel", cat: "doc" },
+  { w: "WORD", c: "Microsoft ___ pengolah kata", cat: "doc" },
+  { w: "SUM", c: "Fungsi Excel =___() penjumlahan", cat: "doc" },
+  { w: "TRACK", c: "___ Changes fitur revisi Word", cat: "doc" },
+  { w: "KOLOM", c: "Column vertikal dalam tabel", cat: "doc" },
+  { w: "EXCEL", c: "Microsoft ___ spreadsheet", cat: "doc" },
+  { w: "FOOTER", c: "Bagian bawah halaman", cat: "doc" },
+  { w: "CHANGES", c: "Perubahan yang dilacak di dokumen", cat: "doc" },
+  { w: "AVERAGE", c: "Fungsi rata-rata di Excel", cat: "doc" },
+  { w: "EDITOR", c: "Orang yang menyunting naskah", cat: "doc" },
+  { w: "FORMAT", c: "Pengaturan gaya tulisan", cat: "doc" },
+  { w: "DRAFT", c: "Versi kasar dokumen", cat: "doc" },
+  { w: "NASIONAL", c: "Media tingkat negara", cat: "fact" },
+  { w: "PROVOKATIF", c: "Isi yang memancing amarah", cat: "fact" }
+];
+
+// ============ STATE ============
+const SIZE = 25;
+const grid = Array(SIZE).fill(null).map(() => Array(SIZE).fill(null));
+const placedWords = []; // Akan berisi: {w, c, cat, r, col, dir, num}
+let currentDir = 'across';
+let selectedCell = null;
+let score = 0;
+let solvedWords = new Set();
+let startTime = Date.now();
+
+// ============ CROSSWORD GENERATOR (SIMPLIFIED & FIXED) ============
+function canPlace(word, r, c, dir) {
+  const len = word.length;
+  
+  if (dir === 'across') {
+    if (c < 0 || c + len > SIZE) return false;
+    if (c > 0 && grid[r][c-1] !== null) return false;
+    if (c + len < SIZE && grid[r][c+len] !== null) return false;
+    
+    let intersections = 0;
+    for (let i = 0; i < len; i++) {
+      const cell = grid[r][c+i];
+      if (cell !== null) {
+        if (cell !== word[i]) return false;
+        intersections++;
+      } else {
+        if (r > 0 && grid[r-1][c+i] !== null) return false;
+        if (r < SIZE-1 && grid[r+1][c+i] !== null) return false;
+      }
+    }
+    if (placedWords.length > 0 && intersections === 0) return false;
+    return true;
+  } else {
+    if (r < 0 || r + len > SIZE) return false;
+    if (r > 0 && grid[r-1][c] !== null) return false;
+    if (r + len < SIZE && grid[r+len][c] !== null) return false;
+    
+    let intersections = 0;
+    for (let i = 0; i < len; i++) {
+      const cell = grid[r+i][c];
+      if (cell !== null) {
+        if (cell !== word[i]) return false;
+        intersections++;
+      } else {
+        if (c > 0 && grid[r+i][c-1] !== null) return false;
+        if (c < SIZE-1 && grid[r+i][c+1] !== null) return false;
+      }
+    }
+    if (placedWords.length > 0 && intersections === 0) return false;
+    return true;
+  }
+}
+
+function generateCrossword() {
+  // Sort by length descending
+  const sorted = [...wordsData].sort((a,b) => b.w.length - a.w.length);
+  
+  // Place first word horizontally in center
+  const first = sorted.shift();
+  const startR = Math.floor(SIZE/2);
+  const startC = Math.floor((SIZE - first.w.length)/2);
+  
+  // Place first word
+  for (let i = 0; i < first.w.length; i++) {
+    grid[startR][startC + i] = first.w[i];
+  }
+  placedWords.push({ ...first, r: startR, col: startC, dir: 'across', num: 0 });
+  
+  // Try to place remaining words
+  let remaining = [...sorted];
+  
+  for (let pass = 0; pass < 15 && remaining.length > 0; pass++) {
+    const nextRemaining = [];
+    
+    // Shuffle
+    for (let i = remaining.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i+1));
+      [remaining[i], remaining[j]] = [remaining[j], remaining[i]];
+    }
+    
+    for (const wordObj of remaining) {
+      let bestPlacement = null;
+      let bestScore = -Infinity;
+      
+      for (const pw of placedWords) {
+        for (let i = 0; i < pw.w.length; i++) {
+          const exR = pw.dir === 'across' ? pw.r : pw.r + i;
+          const exC = pw.dir === 'across' ? pw.col + i : pw.col;
+          const exChar = pw.w[i];
+          
+          for (let j = 0; j < wordObj.w.length; j++) {
+            if (wordObj.w[j] === exChar) {
+              let newR, newC, newDir;
+              if (pw.dir === 'across') {
+                newDir = 'down';
+                newR = exR - j;
+                newC = exC;
+              } else {
+                newDir = 'across';
+                newR = exR;
+                newC = exC - j;
+              }
+              
+              if (canPlace(wordObj.w, newR, newC, newDir)) {
+                const centerR = SIZE/2, centerC = SIZE/2;
+                const wordCenterR = newDir === 'across' ? newR : newR + wordObj.w.length/2;
+                const wordCenterC = newDir === 'across' ? newC + wordObj.w.length/2 : newC;
+                const dist = Math.abs(wordCenterR - centerR) + Math.abs(wordCenterC - centerC);
+                const scoreVal = -dist + (wordObj.w.length * 0.1);
+                
+                if (scoreVal > bestScore) {
+                  bestScore = scoreVal;
+                  bestPlacement = { r: newR, col: newC, dir: newDir };
+                }
+              }
+            }
+          }
+        }
+      }
+      
+      if (bestPlacement) {
+        for (let i = 0; i < wordObj.w.length; i++) {
+          if (bestPlacement.dir === 'across') {
+            grid[bestPlacement.r][bestPlacement.col + i] = wordObj.w[i];
+          } else {
+            grid[bestPlacement.r + i][bestPlacement.col] = wordObj.w[i];
+          }
+        }
+        placedWords.push({ ...wordObj, r: bestPlacement.r, col: bestPlacement.col, dir: bestPlacement.dir, num: 0 });
+      } else {
+        nextRemaining.push(wordObj);
+      }
+    }
+    
+    remaining = nextRemaining;
+  }
+  
+  // ============ ASSIGN NUMBERS (SIMPLIFIED) ============
+  // Find all start cells
+  const startCellMap = new Map(); // key: "r,c", value: [words]
+  
+  placedWords.forEach(pw => {
+    const key = `${pw.r},${pw.col}`;
+    if (!startCellMap.has(key)) startCellMap.set(key, []);
+    startCellMap.get(key).push(pw);
+  });
+  
+  // Sort start cells by reading order (top-to-bottom, left-to-right)
+  const sortedStartCells = Array.from(startCellMap.entries()).sort((a, b) => {
+    const [ar, ac] = a[0].split(',').map(Number);
+    const [br, bc] = b[0].split(',').map(Number);
+    if (ar !== br) return ar - br;
+    return ac - bc;
+  });
+  
+  // Assign numbers
+  let num = 1;
+  sortedStartCells.forEach(([key, words]) => {
+    words.forEach(w => w.num = num);
+    num++;
+  });
+  
+  return { placed: placedWords.length, total: wordsData.length };
+}
+
+// ============ RENDER GRID ============
+function renderGrid() {
+  const container = document.getElementById('gridContainer');
+  container.innerHTML = '';
+  container.style.gridTemplateColumns = `repeat(${SIZE}, 32px)`;
+  
+  // Build number map (use smallest number for each cell)
+  const numberMap = {};
+  placedWords.forEach(pw => {
+    if (pw.num) {
+      const key = `${pw.r},${pw.col}`;
+      if (!numberMap[key] || pw.num < numberMap[key]) {
+        numberMap[key] = pw.num;
+      }
+    }
+  });
+  
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      const cell = document.createElement('div');
+      const key = `${r},${c}`;
+      
+      if (grid[r][c]) {
+        cell.className = 'cell white';
+        cell.dataset.row = r;
+        cell.dataset.col = c;
+        
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.maxLength = 1;
+        input.dataset.row = r;
+        input.dataset.col = c;
+        input.oninput = handleInput;
+        input.onfocus = () => selectCell(r, c);
+        cell.appendChild(input);
+        
+        if (numberMap[key]) {
+          const span = document.createElement('span');
+          span.className = 'cell-num';
+          span.textContent = numberMap[key];
+          cell.appendChild(span);
+        }
+      } else {
+        cell.className = 'cell';
+      }
+      container.appendChild(cell);
+    }
+  }
+}
+
+// ============ RENDER QUESTIONS ============
+function renderQuestions() {
+  const list = document.getElementById('questionList');
+  list.innerHTML = '';
+  
+  const filtered = placedWords.filter(pw => pw.dir === currentDir && pw.num);
+  filtered.sort((a,b) => a.num - b.num);
+  
+  if (filtered.length === 0) {
+    list.innerHTML = '<p style="color:#aaa; text-align:center; padding:20px;">Tidak ada pertanyaan untuk arah ini.</p>';
+    return;
+  }
+  
+  filtered.forEach(pw => {
+    const div = document.createElement('div');
+    div.className = 'q-item';
+    div.id = `q-${pw.num}-${pw.dir}`;
+    div.dataset.num = pw.num;
+    div.dataset.dir = pw.dir;
+    div.onclick = () => jumpToWord(pw.num, pw.dir);
+    
+    const catClass = `cat-${pw.cat}`;
+    const catName = { se:'Search', fact:'Fakta', lat:'Lateral', doc:'Dokumen' }[pw.cat];
+    
+    div.innerHTML = `
+      <div class="q-header">
+        <span class="q-num">${pw.num}. <span class="q-cat ${catClass}">${catName}</span></span>
+        <span class="q-len">(${pw.w.length} huruf)</span>
+      </div>
+      <div>${pw.c}</div>
+    `;
+    list.appendChild(div);
+  });
+  
+  // Update counts
+  const acrossCount = placedWords.filter(pw => pw.dir === 'across' && pw.num).length;
+  const downCount = placedWords.filter(pw => pw.dir === 'down' && pw.num).length;
+  document.getElementById('countAcross').textContent = acrossCount;
+  document.getElementById('countDown').textContent = downCount;
+}
+
+// ============ INTERACTION ============
+function filterQuestions(dir) {
+  currentDir = dir;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(dir === 'across' ? 'tabAcross' : 'tabDown').classList.add('active');
+  renderQuestions();
+}
+
+function selectCell(r, c) {
+  document.querySelectorAll('.cell').forEach(el => {
+    el.classList.remove('selected', 'highlighted');
+  });
+  document.querySelectorAll('.q-item').forEach(el => el.classList.remove('current'));
+  
+  selectedCell = {r, c};
+  const cellEl = document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+  if (cellEl) cellEl.classList.add('selected');
+  
+  const wordsHere = placedWords.filter(pw => {
+    if (pw.dir === 'across') return pw.r === r && c >= pw.col && c < pw.col + pw.w.length;
+    else return pw.col === c && r >= pw.r && r < pw.r + pw.w.length;
+  });
+  
+  if (wordsHere.length > 0) {
+    const targetWord = wordsHere.find(w => w.dir === currentDir) || wordsHere[0];
+    highlightWord(targetWord);
+    
+    const qItem = document.getElementById(`q-${targetWord.num}-${targetWord.dir}`);
+    if (qItem) {
+      qItem.classList.add('current');
+      qItem.scrollIntoView({behavior:'smooth', block:'nearest'});
+    }
+  }
+}
+
+function highlightWord(pw) {
+  for (let i = 0; i < pw.w.length; i++) {
+    const r = pw.dir === 'across' ? pw.r : pw.r + i;
+    const c = pw.dir === 'across' ? pw.col + i : pw.col;
+    const el = document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+    if (el) el.classList.add('highlighted');
+  }
+}
+
+function jumpToWord(num, dir) {
+  const pw = placedWords.find(w => w.num === num && w.dir === dir);
+  if (pw) {
+    currentDir = dir;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(dir === 'across' ? 'tabAcross' : 'tabDown').classList.add('active');
+    selectCell(pw.r, pw.col);
+    const input = document.querySelector(`.cell[data-row="${pw.r}"][data-col="${pw.col}"] input`);
+    if (input) input.focus();
+  }
+}
+
+function handleInput(e) {
+  const val = e.target.value.toUpperCase();
+  e.target.value = val;
+  
+  const r = parseInt(e.target.dataset.row);
+  const c = parseInt(e.target.dataset.col);
+  
+  const wordsHere = placedWords.filter(pw => {
+    if (pw.dir === 'across') return pw.r === r && c >= pw.col && c < pw.col + pw.w.length;
+    else return pw.col === c && r >= pw.r && r < pw.r + pw.w.length;
+  });
+  
+  const activeWord = wordsHere.find(w => w.dir === currentDir) || wordsHere[0];
+  
+  if (activeWord && val) {
+    let nextR, nextC;
+    if (activeWord.dir === 'across') {
+      nextR = r; nextC = c + 1;
+    } else {
+      nextR = r + 1; nextC = c;
+    }
+    
+    const nextInput = document.querySelector(`.cell[data-row="${nextR}"][data-col="${nextC}"] input`);
+    if (nextInput) nextInput.focus();
+  }
+}
+
+// ============ GAME LOGIC ============
+function checkAnswers() {
+  let newlySolved = 0;
+  
+  placedWords.forEach(pw => {
+    if (!pw.num) return;
+    let isCorrect = true;
+    
+    for (let i = 0; i < pw.w.length; i++) {
+      const r = pw.dir === 'across' ? pw.r : pw.r + i;
+      const c = pw.dir === 'across' ? pw.col + i : pw.col;
+      const input = document.querySelector(`.cell[data-row="${r}"][data-col="${c}"] input`);
+      if (!input || input.value.toUpperCase() !== pw.w[i]) {
+        isCorrect = false;
+        break;
+      }
+    }
+    
+    const qKey = `${pw.num}-${pw.dir}`;
+    const qItem = document.getElementById(`q-${qKey}`);
+    
+    if (isCorrect) {
+      if (!solvedWords.has(qKey)) {
+        solvedWords.add(qKey);
+        score += 20;
+        newlySolved++;
+        if (qItem) qItem.classList.add('solved');
+        
+        for (let i = 0; i < pw.w.length; i++) {
+          const r = pw.dir === 'across' ? pw.r : pw.r + i;
+          const c = pw.dir === 'across' ? pw.col + i : pw.col;
+          const cell = document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+          if (cell) cell.classList.add('correct-word');
+        }
+      }
+    } else {
+      if (qItem) qItem.classList.remove('solved');
+    }
+  });
+  
+  updateStats();
+  
+  if (newlySolved > 0) {
+    showFeedback(`✅ ${newlySolved} kata benar! +${newlySolved * 20} poin`);
+  } else {
+    showFeedback(`Terpecahkan: ${solvedWords.size}/${placedWords.length}`);
+  }
+  
+  if (solvedWords.size === placedWords.length && placedWords.length > 0) {
+    setTimeout(() => {
+      showFeedback(`🎉 SELAMAT! SEMUA ${placedWords.length} KATA BERHASIL DIPECAHKAN!`);
+    }, 500);
+  }
+}
+
+function revealCurrent() {
+  if (!selectedCell) {
+    alert("Pilih kotak atau pertanyaan dulu!");
+    return;
+  }
+  
+  const r = selectedCell.r;
+  const c = selectedCell.c;
+  
+  const wordsHere = placedWords.filter(pw => {
+    if (pw.dir === 'across') return pw.r === r && c >= pw.col && c < pw.col + pw.w.length;
+    else return pw.col === c && r >= pw.r && r < pw.r + pw.w.length;
+  });
+  
+  const pw = wordsHere.find(w => w.dir === currentDir) || wordsHere[0];
+  if (!pw) return;
+  
+  for (let i = 0; i < pw.w.length; i++) {
+    const rr = pw.dir === 'across' ? pw.r : pw.r + i;
+    const cc = pw.dir === 'across' ? pw.col + i : pw.col;
+    const input = document.querySelector(`.cell[data-row="${rr}"][data-col="${cc}"] input`);
+    if (input) input.value = pw.w[i];
+  }
+  
+  checkAnswers();
+}
+
+function clearBoard() {
+  if (!confirm('Yakin ingin reset semua jawaban?')) return;
+  document.querySelectorAll('input').forEach(i => i.value = '');
+  document.querySelectorAll('.cell').forEach(c => c.classList.remove('correct-word'));
+  document.querySelectorAll('.q-item').forEach(i => i.classList.remove('solved'));
+  solvedWords = new Set();
+  score = 0;
+  updateStats();
+}
+
+function updateStats() {
+  document.getElementById('score').textContent = score;
+  document.getElementById('progress').textContent = `${solvedWords.size}/${placedWords.length}`;
+  document.getElementById('placed').textContent = `${placedWords.length}/${wordsData.length}`;
+}
+
+function showFeedback(msg) {
+  const fb = document.getElementById('feedback');
+  fb.textContent = msg;
+  fb.style.display = 'block';
+  setTimeout(() => fb.style.display = 'none', 4000);
+}
+
+// ============ TIMER ============
+setInterval(() => {
+  const diff = Math.floor((Date.now() - startTime) / 1000);
+  const m = String(Math.floor(diff/60)).padStart(2,'0');
+  const s = String(diff%60).padStart(2,'0');
+  document.getElementById('timer').textContent = `${m}:${s}`;
+}, 1000);
+
+// ============ INIT ============
+console.log('Starting crossword generation...');
+const result = generateCrossword();
+console.log(`Placed ${result.placed}/${result.total} words`);
+console.log('Placed words:', placedWords.map(pw => `${pw.num}:${pw.w}(${pw.dir})`));
+
+// Debug info
+if (placedWords.length === 0) {
+  const debug = document.getElementById('debugInfo');
+  debug.style.display = 'block';
+  debug.textContent = '⚠️ Tidak ada kata yang terpasang. Refresh halaman untuk mencoba lagi.';
+} else if (placedWords.length < wordsData.length) {
+  const debug = document.getElementById('debugInfo');
+  debug.style.display = 'block';
+  debug.textContent = `ℹ️ ${placedWords.length}/${wordsData.length} kata berhasil dipasang. Beberapa kata terlalu panjang/sulit berpotongan.`;
+}
+
+renderGrid();
+renderQuestions();
+updateStats();
+</script>
+</body>
+</html>
